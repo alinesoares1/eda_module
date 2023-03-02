@@ -1,0 +1,43 @@
+# Starter pipeline
+# Start with a minimal pipeline that you can customize to build and deploy your code.
+# Add steps that build, run tests, deploy, and more:
+# https://aka.ms/yaml
+
+trigger:
+- master
+
+resources:
+- repo: self
+
+jobs:
+- deployment: eda_module
+  displayName: 'eda_module'
+
+  environment:
+    name: put_your_vm_name_here
+    resourceType: VirtualMachine
+
+  pool:
+    vmImage: ubuntu-latest
+
+  workspace:
+    clean: all
+
+  strategy:
+      runOnce:
+        deploy:
+          steps:
+          - checkout: self
+            clean: true
+
+          - script: |
+              docker build -t streamlitapp . ;
+            displayName: 'Docker build'
+
+          - script: |
+              docker run --detach -p 8502:8502 streamlitapp ;
+            displayName: 'Docker run'
+
+          - script: |
+              rm -rf * ;
+            displayName: 'Clean up'
